@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soviet Tetris</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="main-container">
+        <div class="soviet-star">
+            <svg viewBox="0 0 300 300">
+                <path class="star-path" d="M150 25l35 108h113l-91 66 35 108-92-67-91 67 35-108-91-66h113z"/>
+            </svg>
+        </div>
+
+        <div id="main-menu">
+            <h1>ТЕТРИС</h1>
+            <button class="soviet-button" onclick="startGame()">
+                ИГРАТЬ
+            </button>
+        </div>
+
+        <div class="game-container">
+            <div id="game-board"></div>
+            
+            <div class="info-section">
+                <div>ОЧКИ: <span id="score">0</span></div>
+                <div>УРОВЕНЬ: <span id="level">1</span></div>
+            </div>
+            
+            <div class="controls">
+                ← → : ДВИЖЕНИЕ | ↑ : ПОВОРОТ | ↓ : ВНИЗ
+            </div>
+
+            <div id="game-over">
+                <h2>ИГРА ОКОНЧЕНА</h2>
+                <p>ФИНАЛЬНЫЙ СЧЕТ: <span id="final-score">0</span></p>
+                <button class="soviet-button" onclick="tetris.restart()">
+                    НОВАЯ ИГРА
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="tetris.js"></script>
+</body>
+</html>

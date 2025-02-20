@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tetris Controller</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #8b0000;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .controller {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .button {
+            background-color: #cc0000;
+            border: 3px solid #ffd700;
+            color: #ffd700;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            text-align: center;
+            touch-action: none;
+            user-select: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .button:active {
+            background-color: #ffd700;
+            color: #cc0000;
+            transform: scale(0.95);
+        }
+
+        .empty {
+            visibility: hidden;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .status {
+            text-align: center;
+            color: #ffd700;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .start-button {
+            background-color: #009900;
+            padding: 30px;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controller">
+        <div class="status" id="status">Déconnecté</div>
+        
+        <div class="button start-button" id="start">START</div>
+
+        <div class="d-pad">
+            <div class="button empty"></div>
+            <div class="button" id="up">⬆️</div>
+            <div class="button empty"></div>
+            <div class="button" id="left">⬅️</div>
+            <div class="button" id="down">⬇️</div>
+            <div class="button" id="right">➡️</div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button" id="rotate">ROTATION</div>
+            <div class="button" id="drop">DROP</div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let isConnected = false;
+
+        const connectWebSocket = () => {
+            ws = new WebSocket(`ws://${window.location.hostname}:81/`);
+            
+            ws.onopen = () => {
+                isConnected = true;
+                document.getElementById('status').textContent = 'Connecté';
+                document.getElementById('status').style.color = '#00ff00';
+            };
+            
+            ws.onclose = () => {
+                isConnected = false;
+                document.getElementById('status').textContent = 'Déconnecté';
+                document.getElementById('status').style.color = '#ff0000';
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            ws.onerror = () => {
+                isConnected = false;
+                document.getElementById('status').textContent = 'Erreur de connexion';
+                document.getElementById('status').style.color = '#ff0000';
+            };
+        };
+
+        const sendCommand = (command) => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ command: command }));
+            }
+        };
+
+        // Gestion des boutons
+        const buttons = {
+            'start': 'start',
+            'up': 'rotate',
+            'down': 'down',
+            'left': 'left',
+            'right': 'right',
+            'rotate': 'rotate',
+            'drop': 'drop'
+        };
+
+        // Fonction pour gérer les événements tactiles
+        const handleTouch = (element, command) => {
+            let isPressed = false;
+
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!isPressed) {
+                    isPressed = true;
+                    element.style.backgroundColor = '#ffd700';
+                    element.style.color = '#cc0000';
+                    sendCommand(command);
+                }
+            });
+
+            element.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isPressed = false;
+                element.style.backgroundColor = command === 'start' ? '#009900' : '#cc0000';
+                element.style.color = '#ffd700';
+            });
+
+            // Éviter les actions indésirables sur mobile
+            element.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            });
+        };
+
+        // Configuration des boutons
+        Object.keys(buttons).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                handleTouch(element, buttons[id]);
+            }
+        });
+
+        // Empêcher le zoom et autres comportements par défaut
+        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('dblclick', (e) => e.preventDefault());
+
+        // Démarrer la connexion WebSocket
+        connectWebSocket();
+    </script>
+</body>
+</html>
